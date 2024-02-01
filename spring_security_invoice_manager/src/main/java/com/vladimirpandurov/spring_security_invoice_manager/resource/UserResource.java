@@ -3,9 +3,11 @@ package com.vladimirpandurov.spring_security_invoice_manager.resource;
 import com.vladimirpandurov.spring_security_invoice_manager.domain.HttpResponse;
 import com.vladimirpandurov.spring_security_invoice_manager.domain.User;
 import com.vladimirpandurov.spring_security_invoice_manager.dto.UserDTO;
+import com.vladimirpandurov.spring_security_invoice_manager.form.LoginForm;
 import com.vladimirpandurov.spring_security_invoice_manager.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,7 @@ import java.util.Map;
 @RestController
 @RequestMapping(path="/user")
 @RequiredArgsConstructor
+@Slf4j
 public class UserResource {
 
     private final UserService userService;
@@ -38,6 +41,21 @@ public class UserResource {
                 .build()
         );
     }
+    @PostMapping("/login")
+    public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm){
+        UserDTO userDTO = userService.getUserByEmail(loginForm.getEmail());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                .timeStamp(LocalDateTime.now().toString())
+                .data(Map.of("user", userDTO))
+                .message("Login Success")
+                .status(HttpStatus.OK)
+                .statusCode(HttpStatus.OK.value())
+                .build()
+        );
+    }
+
+
 
     private URI getUri(Long userId){
         return URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/get/" + userId).toUriString());

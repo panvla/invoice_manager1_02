@@ -2,8 +2,11 @@ package com.vladimirpandurov.spring_security_invoice_manager.resource;
 
 import com.vladimirpandurov.spring_security_invoice_manager.domain.HttpResponse;
 import com.vladimirpandurov.spring_security_invoice_manager.domain.User;
+import com.vladimirpandurov.spring_security_invoice_manager.domain.UserPrincipal;
 import com.vladimirpandurov.spring_security_invoice_manager.dto.UserDTO;
 import com.vladimirpandurov.spring_security_invoice_manager.form.LoginForm;
+import com.vladimirpandurov.spring_security_invoice_manager.provider.TokenProvider;
+import com.vladimirpandurov.spring_security_invoice_manager.service.RoleService;
 import com.vladimirpandurov.spring_security_invoice_manager.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +32,9 @@ import java.util.Map;
 public class UserResource {
 
     private final UserService userService;
+    private final RoleService roleService;
     private final AuthenticationManager authenticationManager;
+    private final TokenProvider tokenProvider;
 
     @PostMapping("/register")
     public ResponseEntity<HttpResponse> saveUser(@RequestBody @Valid User user){
@@ -56,7 +61,8 @@ public class UserResource {
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
-                        .data(Map.of("user", userDTO))
+                        .data(Map.of("user", userDTO, "access_token", tokenProvider.createAccessToken(getUserPrincipal(userDTO)),
+                                "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(userDTO))))
                         .message("Login Success")
                         .status(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.value())
@@ -77,6 +83,9 @@ public class UserResource {
         );
     }
 
+    private UserPrincipal getUserPrincipal(UserDTO userDTO){
+        return new UserPrincipal(userService.getUser(userDTO.getEmail()), this.roleService.getRoleByUserId(userDTO.getId()));
+    }
 
     private URI getUri(Long userId){
         return URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/get/" + userId).toUriString());

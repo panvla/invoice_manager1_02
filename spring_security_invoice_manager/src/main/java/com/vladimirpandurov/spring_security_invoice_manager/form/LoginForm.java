@@ -1,13 +1,15 @@
 package com.vladimirpandurov.spring_security_invoice_manager.form;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data
 public class LoginForm {
-    @NotEmpty(message = "email cannot be empty")
+    @NotEmpty(message = "Email cannot be empty")
+    @Email(message = "Invalid email. Please enter a valid email address")
     private String email;
-    @NotEmpty(message = "password cannot be empty")
+    @NotEmpty(message = "Password cannot be empty")
     private String password;
 
 }

@@ -1,8 +1,10 @@
 package com.vladimirpandurov.spring_security_invoice_manager.service.implementation;
 
+import com.vladimirpandurov.spring_security_invoice_manager.domain.Role;
 import com.vladimirpandurov.spring_security_invoice_manager.domain.User;
 import com.vladimirpandurov.spring_security_invoice_manager.dto.UserDTO;
 import com.vladimirpandurov.spring_security_invoice_manager.dtomapper.UserDTOMapper;
+import com.vladimirpandurov.spring_security_invoice_manager.repository.RoleRepository;
 import com.vladimirpandurov.spring_security_invoice_manager.repository.UserRepository;
 import com.vladimirpandurov.spring_security_invoice_manager.repository.implementation.UserRepositoryImpl;
 import com.vladimirpandurov.spring_security_invoice_manager.service.UserService;
@@ -10,21 +12,24 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import static com.vladimirpandurov.spring_security_invoice_manager.dtomapper.UserDTOMapper.fromUser;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository<User> userRepository;
+    private final RoleRepository<Role> roleRepository;
 
     @Override
     public UserDTO createUser(User user) {
-        return UserDTOMapper.fromUser(userRepository.create(user));
+        return mapToUserDTO(userRepository.create(user));
     }
 
     @Override
     public UserDTO getUserByEmail(String email) {
-        return UserDTOMapper.fromUser(userRepository.getUserByEmail(email));
+        return mapToUserDTO(userRepository.getUserByEmail(email));
     }
 
     @Override
@@ -33,12 +38,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUser(String email) {
-        return this.userRepository.getUserByEmail(email);
+    public UserDTO verifyCode(String email, String code) {
+        return mapToUserDTO(userRepository.verifyCode(email, code));
     }
 
-    @Override
-    public UserDTO verifyCode(String email, String code) {
-        return UserDTOMapper.fromUser(userRepository.verifyCode(email, code));
+    private UserDTO mapToUserDTO (User user){
+        return fromUser(user, roleRepository.getRoleByUserId(user.getId()));
     }
 }

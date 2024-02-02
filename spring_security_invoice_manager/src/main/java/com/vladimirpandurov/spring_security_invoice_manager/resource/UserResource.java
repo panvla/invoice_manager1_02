@@ -4,6 +4,7 @@ import com.vladimirpandurov.spring_security_invoice_manager.domain.HttpResponse;
 import com.vladimirpandurov.spring_security_invoice_manager.domain.User;
 import com.vladimirpandurov.spring_security_invoice_manager.domain.UserPrincipal;
 import com.vladimirpandurov.spring_security_invoice_manager.dto.UserDTO;
+import com.vladimirpandurov.spring_security_invoice_manager.dtomapper.UserDTOMapper;
 import com.vladimirpandurov.spring_security_invoice_manager.form.LoginForm;
 import com.vladimirpandurov.spring_security_invoice_manager.provider.TokenProvider;
 import com.vladimirpandurov.spring_security_invoice_manager.service.RoleService;
@@ -86,7 +87,7 @@ public class UserResource {
     }
 
     private UserPrincipal getUserPrincipal(UserDTO userDTO){
-        return new UserPrincipal(userService.getUser(userDTO.getEmail()), this.roleService.getRoleByUserId(userDTO.getId()));
+        return new UserPrincipal(UserDTOMapper.toUser(userService.getUserByEmail(userDTO.getEmail())), this.roleService.getRoleByUserId(userDTO.getId()));
     }
 
     private URI getUri(Long userId){

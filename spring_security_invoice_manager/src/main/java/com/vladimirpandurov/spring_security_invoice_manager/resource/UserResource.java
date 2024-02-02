@@ -16,12 +16,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
+
+import static org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated;
 
 @RestController
 @RequestMapping(path="/user")
@@ -49,7 +52,7 @@ public class UserResource {
     }
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm){
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginForm.getEmail(), loginForm.getPassword()));
+        authenticationManager.authenticate(unauthenticated(loginForm.getEmail(), loginForm.getPassword()));
         UserDTO userDTO = userService.getUserByEmail(loginForm.getEmail());
         return userDTO.isUsingMfa() ? sendVerificationCode(userDTO) : sendResponse(userDTO);
     }
@@ -57,6 +60,20 @@ public class UserResource {
     public ResponseEntity<HttpResponse> verifyCode(@PathVariable("email") String email, @PathVariable("code") String code){
         UserDTO user = userService.verifyCode(email, code);
         return sendResponse(user);
+    }
+
+    public ResponseEntity<HttpResponse> profile(Authentication authentication){
+        UserDTO userDTO = userService.getUserByEmail(authentication.getName());
+        log.info(authentication.getName());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                .timeStamp(LocalDateTime.now().toString())
+                .data(Map.of("user", userDTO))
+                        .message("Profile Retrieved")
+                .status(HttpStatus.OK)
+                .statusCode(HttpStatus.OK.value())
+                .build()
+        );
     }
 
 

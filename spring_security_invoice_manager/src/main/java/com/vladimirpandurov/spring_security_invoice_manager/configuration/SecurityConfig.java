@@ -1,5 +1,6 @@
 package com.vladimirpandurov.spring_security_invoice_manager.configuration;
 
+import com.vladimirpandurov.spring_security_invoice_manager.filter.CustomAuthorizationFilter;
 import com.vladimirpandurov.spring_security_invoice_manager.handler.CustomAccessDeniedHandler;
 import com.vladimirpandurov.spring_security_invoice_manager.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -28,6 +30,7 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final BCryptPasswordEncoder encoder;
+    private final CustomAuthorizationFilter customAuthorizationFilter;
     private static final String[] PUBLIC_URLS = {"/user/login/**", "/user/register/**", "/user/verify/code/**"};
 
     @Bean
@@ -40,6 +43,7 @@ public class SecurityConfig {
 
         http.exceptionHandling().accessDeniedHandler(customAccessDeniedHandler).authenticationEntryPoint(customAuthenticationEntryPoint);
         http.authorizeHttpRequests().anyRequest().authenticated();
+        http.addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
     @Bean

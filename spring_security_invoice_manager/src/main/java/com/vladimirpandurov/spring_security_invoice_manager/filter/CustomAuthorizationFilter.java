@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.vladimirpandurov.spring_security_invoice_manager.utils.ExceptionUtils.processError;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Component
@@ -49,6 +50,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }catch (Exception exception){
             log.error(exception.getMessage());
+            processError(request, response, exception);
         }
     }
 

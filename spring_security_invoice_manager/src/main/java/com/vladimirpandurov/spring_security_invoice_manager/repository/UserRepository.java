@@ -1,6 +1,7 @@
 package com.vladimirpandurov.spring_security_invoice_manager.repository;
 
 import com.vladimirpandurov.spring_security_invoice_manager.domain.User;
+import com.vladimirpandurov.spring_security_invoice_manager.dto.UserDTO;
 
 import java.util.Collection;
 
@@ -13,4 +14,6 @@ public interface UserRepository <T extends User> {
     Boolean delete(Long id);
 
     T getUserByEmail(String email);
+
+    void sendVerificationCode(UserDTO userDTO);
 }

@@ -2,6 +2,7 @@ package com.vladimirpandurov.spring_security_invoice_manager.repository.implemen
 
 import com.vladimirpandurov.spring_security_invoice_manager.domain.User;
 import com.vladimirpandurov.spring_security_invoice_manager.domain.UserPrincipal;
+import com.vladimirpandurov.spring_security_invoice_manager.dto.UserDTO;
 import com.vladimirpandurov.spring_security_invoice_manager.exception.ApiException;
 import com.vladimirpandurov.spring_security_invoice_manager.repository.RoleRepository;
 import com.vladimirpandurov.spring_security_invoice_manager.repository.UserRepository;
@@ -20,20 +21,22 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+
+import java.util.*;
 
 import static com.vladimirpandurov.spring_security_invoice_manager.enumeration.RoleType.ROLE_USER;
 import static com.vladimirpandurov.spring_security_invoice_manager.enumeration.VerificationType.ACCOUNT;
 import static com.vladimirpandurov.spring_security_invoice_manager.query.UserQuery.*;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
+import static org.apache.commons.lang3.time.DateFormatUtils.format;
+import static org.apache.commons.lang3.time.DateUtils.addDays;
 
 @Repository
 @RequiredArgsConstructor
 @Slf4j
 public class UserRepositoryImpl implements UserRepository<User>, UserDetailsService {
 
+    private static final String DATA_FORMAT = "yyyy-MM-dd hh:mm:ss";
     private final NamedParameterJdbcTemplate jdbc;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder encoder;
@@ -86,6 +89,20 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         }catch (EmptyResultDataAccessException exception){
             log.error("No user found by email");
             throw new ApiException("No user found by email: " + email);
+        }catch (Exception exception){
+            log.error(exception.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
+        }
+    }
+
+    @Override
+    public void sendVerificationCode(UserDTO userDTO) {
+        String expirationDate = format(addDays(new Date(), 1), DATA_FORMAT);
+        String verificationCode = randomAlphabetic(8).toUpperCase();
+        try{
+            jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, Map.of("id", userDTO.getId()));
+            jdbc.update(INSERT_VERIFICATION_CODE_QUERY, Map.of("user_id", userDTO.getId(), "code", verificationCode, "expirationDate", expirationDate));
+            //sendSms()
         }catch (Exception exception){
             log.error(exception.getMessage());
             throw new ApiException("An error occurred. Please try again.");

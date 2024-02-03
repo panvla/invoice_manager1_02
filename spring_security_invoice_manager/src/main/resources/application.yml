@@ -1,5 +1,4 @@
-jwt:
-  secret: mysupercomplexsecret;
+
 spring:
   profiles:
     active: @spring.profiles.active@

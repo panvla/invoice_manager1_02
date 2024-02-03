@@ -1,5 +1,6 @@
 package com.vladimirpandurov.spring_security_invoice_manager.domain;
 
+import com.vladimirpandurov.spring_security_invoice_manager.dto.UserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -8,6 +9,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
+
+import static com.vladimirpandurov.spring_security_invoice_manager.dtomapper.UserDTOMapper.fromUser;
 
 @RequiredArgsConstructor
 public class UserPrincipal implements UserDetails {
@@ -48,5 +51,9 @@ public class UserPrincipal implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.user.isEnabled();
+    }
+
+    public UserDTO getUser(){
+        return fromUser(this.user, role);
     }
 }
